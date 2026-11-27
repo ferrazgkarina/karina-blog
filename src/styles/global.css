@@ -1,5 +1,12 @@
-@import '@fontsource/amaranth/400.css';
+/* Fontes hospedadas no próprio site, só os pesos usados. Os arquivos incluem
+   latin-ext (diacríticos turcos), baixado só quando a página precisa. */
 @import '@fontsource/amaranth/700.css';
+@import '@fontsource/amaranth/700-italic.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/400-italic.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
 @import './tokens.css';
 
 *,
@@ -20,11 +27,11 @@ html {
 
 body {
   margin: 0;
-  background: var(--color-background);
+  background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--fs-body-mobile);
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 @media (min-width: 768px) {
@@ -40,6 +47,11 @@ h3 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0 0 var(--space-3);
+}
+
+h1,
+h2 {
+  color: var(--color-primary);
 }
 
 h1 {
@@ -69,7 +81,9 @@ p {
 }
 
 a {
-  color: var(--color-link);
+  color: var(--color-primary);
+  text-decoration-color: var(--color-accent);
+  text-underline-offset: 3px;
 }
 
 img {

@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import CookieBanner from '../components/CookieBanner.astro';
 import { siteConfig } from '../config/site';
+import { theme, themeCss } from '../config/theme';
 
 interface Props {
   title: string;
@@ -26,6 +27,8 @@ const ogImage = image ? new URL(image, Astro.site).toString() : fallbackImage;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {theme.favicon && <link rel="icon" href={theme.favicon} />}
+    <style is:inline set:html={themeCss()} />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     <link rel="canonical" href={canonicalURL} />
