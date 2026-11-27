@@ -9,6 +9,18 @@
 @import '@fontsource/inter/700.css';
 @import './tokens.css';
 
+/* A Amaranth só traz o subset latin: faltam Ğ ğ Ş ş İ (turco). Esses 5 glifos
+   foram montados a partir das peças da própria fonte (ver
+   tools/build-amaranth-turkish.py) e só são usados para esses caracteres. */
+@font-face {
+  font-family: 'Amaranth';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/amaranth-turkish-700.woff2') format('woff2');
+  unicode-range: U+011E-011F, U+0130, U+015E-015F;
+}
+
 *,
 *::before,
 *::after {
