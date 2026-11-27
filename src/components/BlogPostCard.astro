@@ -1,0 +1,127 @@
+---
+import type { PostCard } from '../lib/sanity';
+
+interface Props {
+  post: PostCard;
+  featured?: boolean;
+  // Quando este card marca o "hub" de uma categoria, ele já aparece grande
+  // no slot de destaque — por isso some da grade normal quando essa
+  // categoria (ou "all", no caso do destaque do site) está ativa. O JS da
+  // página lê esses data-attributes pra decidir isso, não a marcação em si.
+  featuredFor: string | null;
+}
+
+const { post, featured = false, featuredFor } = Astro.props;
+const href = `/blog/${post.slug}/`;
+---
+
+<a
+  class:list={['blog-card', { featured }]}
+  href={href}
+  data-category={post.category}
+  data-title={post.title.toLowerCase()}
+  data-featured-for={featuredFor ?? ''}
+>
+  {
+    post.coverImageUrl ? (
+      <img class="blog-card-image" src={post.coverImageUrl} alt="" loading="lazy" />
+    ) : (
+      <div class="blog-card-image" />
+    )
+  }
+  <div class="blog-card-body">
+    <span class="category-label">{post.category}</span>
+    <span class="blog-card-title">{post.title}</span>
+  </div>
+</a>
+
+<style>
+  .blog-card {
+    display: flex;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  /* Satélites: imagem (4 cantos arredondados) encostada no cartão branco
+     (arredondado só à direita, cantos retos à esquerda). Como os dois ficam
+     coladas sem gap, o branco "espia" atrás dos cantos curvos da imagem —
+     dá a sensação de que o branco está por trás dela. */
+  .blog-card-image {
+    display: block;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 140px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-background-highlight));
+    border-radius: 12px;
+  }
+
+  .blog-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    justify-content: flex-start;
+  }
+
+  .blog-card:not(.featured) .blog-card-body {
+    flex: 1;
+    background: #ffffff;
+    padding: var(--space-3);
+    padding-left: calc(var(--space-3) + 12px);
+    margin-left: -12px;
+    border-radius: 0 12px 12px 0;
+  }
+
+  .blog-card-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.125rem;
+    line-height: 1.3;
+  }
+
+  .blog-card.featured {
+    flex-direction: column;
+  }
+
+  .blog-card.featured .blog-card-image {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 12px;
+  }
+
+  /* Mesmo estilo "branco por trás" dos satélites, só que na vertical: imagem
+     em cima com os 4 cantos redondos, cartão branco colado embaixo dela
+     (arredondado só nos cantos de baixo) — espia atrás das pontas curvas. */
+  .blog-card.featured .blog-card-body {
+    background: #ffffff;
+    padding: var(--space-3);
+    padding-top: calc(var(--space-3) + 12px);
+    margin-top: -12px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .blog-card.featured .blog-card-title {
+    font-size: 1.5rem;
+  }
+
+  /* A partir do breakpoint em que o destaque vira uma coluna ao lado da
+     grade (ver .blog-layout em blog/index.astro), o card estica pra
+     acompanhar a altura do bloco de 6 posts paginado ao lado — por isso a
+     imagem troca de aspect-ratio fixo pra flex:1 (preenche o espaço que
+     sobra depois do título). No mobile, empilhado, não há altura de
+     referência pra esticar, então mantém proporção fixa (16:10, mais baixa
+     que retrato pra não ocupar a tela toda). */
+  @media (min-width: 768px) {
+    .blog-card.featured {
+      height: 100%;
+    }
+
+    .blog-card.featured .blog-card-image {
+      aspect-ratio: auto;
+      flex: 1;
+      min-height: 0;
+    }
+  }
+</style>

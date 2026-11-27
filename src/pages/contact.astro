@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+// Conteúdo específico desta página — placeholders a trocar:
+// - email: troque pelo endereço público que você quer usar (não usei seu
+//   email pessoal aqui de propósito).
+// - social links: troque '#' pelos perfis reais quando existirem.
+import { siteConfig } from '../config/site';
+const contactEmail = siteConfig.contactEmail;
+const socialLinks = [
+  { label: 'Instagram', href: '#' },
+  { label: 'Pinterest', href: '#' },
+];
+---
+
+<BaseLayout title="Contact">
+  <Header />
+
+  <main class="container page-content">
+    <h1>Contact</h1>
+    <p class="intro">
+      Questions about a post, a partnership idea, or just want to say hi? Reach out — I read every message.
+    </p>
+
+    <div class="contact-block">
+      <span class="contact-label text-secondary">Email</span>
+      {contactEmail ? <a class="contact-email" href={`mailto:${contactEmail}`}>{contactEmail}</a> : <span class="contact-email">Contact email to be defined.</span>}
+    </div>
+
+    <div class="contact-block">
+      <span class="contact-label text-secondary">Follow along</span>
+      <ul class="social-links">
+        {
+          socialLinks.map((social) => (
+            <li>
+              <a href={social.href}>{social.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .page-content {
+    max-width: var(--article-max);
+    padding-block: var(--space-6);
+  }
+
+  .intro {
+    margin-bottom: var(--space-5);
+  }
+
+  .contact-block {
+    margin-bottom: var(--space-4);
+  }
+
+  .contact-label {
+    display: block;
+    margin-bottom: var(--space-1);
+  }
+
+  .contact-email {
+    font-weight: 600;
+    font-size: 1.125rem;
+  }
+
+  .social-links {
+    display: flex;
+    gap: var(--space-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .social-links a {
+    font-weight: 600;
+  }
+</style>

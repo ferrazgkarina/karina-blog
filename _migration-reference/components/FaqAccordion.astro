@@ -1,0 +1,142 @@
+---
+import { useTranslations, defaultLang, type Locale } from '../i18n/utils';
+
+const t = useTranslations((Astro.currentLocale as Locale) ?? defaultLang);
+
+// Perguntas específicas de Cappadócia — conteúdo real da página.
+const questions = [
+  {
+    question: 'When is the best time to visit Cappadocia, Turkey?',
+    answer:
+      "Cappadocia is a year-round destination, depending on what you're looking for. May, June, September, and October are high season, but contrary to what many people think, it doesn't close down in winter. The seasons are clearly defined and the landscape transforms throughout the year. Balloon flights operate all year round.",
+  },
+  {
+    question: 'Where is Cappadocia and how do I get there?',
+    answer:
+      'Cappadocia is located in Central Anatolia, in the heart of Turkey, far from the coast. The fastest way in is to fly into Kayseri (ASR) or Nevşehir (NAV) airport from major cities like Istanbul, Izmir or Antalya. There are also direct flights to Kayseri from European countries like Germany, France and Austria.',
+  },
+  {
+    question: 'How many days do I need in Cappadocia?',
+    answer:
+      "It depends on what you'd like to see. For the hot air balloon flight and the most famous sites, 2 nights is the minimum. For hiking and more cultural activities like a cooking class or Turkish bath, 4 full days is a good number.",
+  },
+  {
+    question: 'Are cave hotels worth it?',
+    answer:
+      "Definitely, this is one of the few places in the world where you can spend the night in a cave with all the comforts of modern life. Just keep in mind that caves tend to have less ventilation and sometimes lower ceilings, so they may not be the best fit if you're claustrophobic.",
+  },
+];
+---
+
+<section class="faq-section">
+  <div class="container faq-inner">
+    <div class="faq-content">
+      <h2>{t('home.faqHeading')}</h2>
+      <a class="faq-link" href="#">{t('home.faqLink')}</a>
+
+      <div class="faq-list">
+        {
+          questions.map((item) => (
+            <details class="faq-item">
+              <summary>
+                {item.question}
+                <span class="faq-chevron" aria-hidden="true">
+                  ⌄
+                </span>
+              </summary>
+              <p>{item.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+
+    <img class="faq-illustration" src="/images/faq-illustration.jpg" alt="" loading="lazy" />
+  </div>
+</section>
+
+<style>
+  .faq-section {
+    background: #ffffff;
+  }
+
+  .faq-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding-block: var(--space-6);
+  }
+
+  .faq-content h2 {
+    margin-bottom: var(--space-1);
+  }
+
+  .faq-link {
+    display: inline-block;
+    margin-bottom: var(--space-4);
+    color: var(--color-text-secondary);
+    text-decoration: underline;
+    font-size: var(--fs-secondary-mobile);
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--color-border);
+    padding-block: var(--space-3);
+  }
+
+  .faq-item summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    list-style: none;
+  }
+
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-chevron {
+    transition: transform 0.15s ease;
+  }
+
+  .faq-item[open] .faq-chevron {
+    transform: rotate(180deg);
+  }
+
+  .faq-item p {
+    margin: var(--space-2) 0 0;
+    color: var(--color-text);
+    font-size: var(--fs-secondary-mobile);
+  }
+
+  .faq-illustration {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .faq-inner {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .faq-content {
+      flex: 1;
+      max-width: 640px;
+    }
+
+    .faq-illustration {
+      display: block;
+      width: 440px;
+      align-self: flex-end;
+    }
+  }
+</style>

@@ -1,0 +1,103 @@
+---
+import type { RelatedPostRef } from '../lib/sanity';
+import ShareButtons from './ShareButtons.astro';
+import RelatedContent from './RelatedContent.astro';
+import { useTranslations, defaultLang, type Locale } from '../i18n/utils';
+
+interface Props {
+  relatedPosts: RelatedPostRef[];
+}
+
+const { relatedPosts } = Astro.props;
+const t = useTranslations((Astro.currentLocale as Locale) ?? defaultLang);
+---
+
+<aside class="sidebar-col" aria-label={t('sidebar.ariaLabel')}>
+  <!--
+    Sticky-bottom pattern: `.sidebar-col` is a grid item stretched to the
+    height of the article column (the taller one). `margin-top: auto` on
+    `.sidebar-sticky` pushes it to the bottom of that column in normal flow;
+    `position: sticky; bottom: …` then pins it just above the fixed
+    ComingNextBar while scrolling, growing upward as it gains content, and it
+    naturally detaches once `.sidebar-col`'s own bottom (end of the post)
+    scrolls into view instead of floating past it.
+  -->
+  <div class="sidebar-sticky">
+    <div class="sidebar-top-actions">
+      <ShareButtons />
+      <button class="bookmark-button" type="button" aria-pressed="false" aria-label={t('sidebar.bookmarkAriaLabel')}>
+        ☆
+      </button>
+    </div>
+    <RelatedContent posts={relatedPosts} />
+  </div>
+</aside>
+
+<style>
+  .sidebar-col {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .sidebar-col {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .sidebar-sticky {
+    position: sticky;
+    bottom: calc(var(--coming-next-bar-height, 60px) + var(--space-4));
+    margin-top: auto;
+    background: var(--color-secondary);
+    border-radius: 8px;
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .sidebar-top-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .bookmark-button {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--color-text);
+  }
+
+  .bookmark-button[aria-pressed='true'] {
+    color: var(--color-primary);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.bookmark-button').forEach((button) => {
+    button.addEventListener('click', () => {
+      const pressed = button.getAttribute('aria-pressed') === 'true';
+      button.setAttribute('aria-pressed', String(!pressed));
+      button.textContent = pressed ? '☆' : '★';
+    });
+  });
+
+  // A caixa sticky fica colada acima do ComingNextBar (sempre fixo no rodapé,
+  // mobile ou desktop) — a altura dele é medida em JS porque varia um pouco
+  // por breakpoint/conteúdo, não é um valor fixo.
+  function measureComingNextBarOffset() {
+    const bar = document.querySelector<HTMLElement>('.coming-next-bar');
+    const sticky = document.querySelector<HTMLElement>('.sidebar-sticky');
+    if (!bar || !sticky) return;
+    sticky.style.setProperty('--coming-next-bar-height', `${bar.getBoundingClientRect().height}px`);
+  }
+
+  measureComingNextBarOffset();
+  window.addEventListener('resize', measureComingNextBarOffset);
+  document.fonts?.ready.then(measureComingNextBarOffset);
+</script>

@@ -1,0 +1,70 @@
+---
+interface Props {
+  name: string;
+  role: string;
+  bio: string;
+}
+
+const { name, role, bio } = Astro.props;
+const initials = name
+  .split(' ')
+  .map((part) => part[0])
+  .join('');
+---
+
+<section class="author-bio">
+  <div class="container">
+    <div class="author-bio-content">
+      <div class="avatar" aria-hidden="true">{initials}</div>
+      <div>
+        <p class="author-name">{name}</p>
+        <p class="author-role text-secondary">{role}</p>
+        <p class="author-text">{bio}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Faixa de largura total (como o bloco azul do topo do post); o conteúdo
+     fica alinhado à coluna do artigo. O padding de baixo inclui a folga da
+     ComingNextBar fixa. */
+  .author-bio {
+    background: var(--color-background-highlight);
+    padding-block: var(--space-5) calc(var(--space-5) + 60px);
+  }
+
+  .author-bio-content {
+    max-width: var(--article-max);
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+
+  .avatar {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-secondary);
+    color: var(--color-text);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .author-name {
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .author-role {
+    margin: 0 0 var(--space-2);
+  }
+
+  .author-text {
+    margin: 0;
+  }
+</style>

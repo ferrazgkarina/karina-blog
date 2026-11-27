@@ -1,0 +1,164 @@
+---
+import type { GoodToKnowData } from '../lib/sanity';
+import { useTranslations, defaultLang, type Locale } from '../i18n/utils';
+
+interface Props {
+  data: GoodToKnowData | null;
+}
+
+const { data } = Astro.props;
+const t = useTranslations((Astro.currentLocale as Locale) ?? defaultLang);
+const title = data?.title || t('goodToKnow.defaultTitle');
+---
+
+{
+  data && data.items.length > 0 && (
+    <section id="good-to-know" class="good-to-know" aria-labelledby="good-to-know-heading">
+      <h2 id="good-to-know-heading">{title}</h2>
+      <ul class="gtk-list">
+        {data.items.map((item) => (
+          <li class="gtk-item">
+            <span class="gtk-dot" aria-hidden="true" />
+            <div class="gtk-content">
+              <p class="gtk-heading">
+                <strong class="gtk-label">{item.label}</strong>
+                {item.rating !== null && (
+                  <span class="gtk-rating" role="img" aria-label={t('goodToKnow.ratingAriaLabel').replace('{rating}', String(item.rating))}>
+                    <span aria-hidden="true">{'★'.repeat(item.rating)}{'☆'.repeat(5 - item.rating)}</span>
+                  </span>
+                )}
+              </p>
+              {item.textHtml && <div class="gtk-text" set:html={item.textHtml} />}
+            </div>
+            {item.link && (
+              <a class="gtk-link" {...item.link.attrs}>
+                {item.link.text}
+                {item.link.attrs.target && <span class="visually-hidden"> {t('goodToKnow.opensInNewTab')}</span>}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .good-to-know {
+    max-width: var(--article-max);
+    margin-top: var(--space-6);
+    font-weight: 500;
+    /* O header do site não é fixo, então só uma folga de respiro acima do título. */
+    scroll-margin-top: var(--space-5);
+  }
+
+  .good-to-know h2 {
+    color: var(--color-primary);
+  }
+
+  .gtk-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .gtk-item {
+    display: grid;
+    grid-template-columns: 14px 1fr;
+    column-gap: var(--space-3);
+    row-gap: var(--space-2);
+    align-items: start;
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* A linha de baixo fica por conta do border-top do AuthorBio — evita linha dupla. */
+  .gtk-item:last-child {
+    border-bottom: none;
+  }
+
+  /* margin-top em `em` centraliza o pontinho na primeira linha do label. */
+  .gtk-dot {
+    grid-row: 1 / span 2;
+    width: 14px;
+    height: 14px;
+    margin-top: 0.4em;
+    border-radius: 50%;
+    background: var(--color-secondary);
+  }
+
+  .gtk-content {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .gtk-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--space-2);
+    margin: 0;
+  }
+
+  .gtk-label {
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+
+  .gtk-rating {
+    color: var(--color-primary);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+
+  .gtk-text {
+    color: var(--color-text);
+  }
+
+  .gtk-text :global(p) {
+    margin: 0;
+  }
+
+  .gtk-text :global(a),
+  .gtk-link {
+    color: var(--color-link);
+  }
+
+  .gtk-link {
+    grid-column: 2;
+    justify-self: start;
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    .gtk-item {
+      grid-template-columns: 14px 1fr auto;
+    }
+
+    .gtk-dot {
+      grid-row: auto;
+    }
+
+    .gtk-content {
+      grid-column: auto;
+    }
+
+    .gtk-link {
+      grid-column: 3;
+      align-self: center;
+      justify-self: end;
+      white-space: nowrap;
+    }
+  }
+</style>
+
+<script>
+  // Imagens lazy acima do box (fotos no meio do texto) mudam a altura da página
+  // depois que o navegador já pulou para #good-to-know — reposiciona no load.
+  window.addEventListener('load', () => {
+    if (location.hash === '#good-to-know') {
+      document.getElementById('good-to-know')?.scrollIntoView({ behavior: 'instant' });
+    }
+  });
+</script>

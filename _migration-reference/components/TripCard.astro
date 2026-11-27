@@ -1,0 +1,214 @@
+---
+import type { TripCardItem } from '../data/tripCards';
+
+interface Props {
+  item: TripCardItem;
+}
+
+const { item } = Astro.props;
+---
+
+<div class:list={['trip-card', { featured: Boolean(item.badge) }]}>
+  <div class="trip-card-photo">
+    {item.imageUrl && <img class="trip-card-photo-img" src={item.imageUrl} alt={item.name} loading="lazy" />}
+  </div>
+  <div class="trip-card-body">
+    {item.badge && <span class="trip-card-badge">{item.badge}</span>}
+    <details class="trip-card-details">
+      <summary>
+        <h3>{item.name}</h3>
+        <span class="trip-card-chevron" aria-hidden="true">⌄</span>
+      </summary>
+      <p>{item.description}</p>
+      {/* Dentro do <details>: fechados no mobile ficam escondidos junto com a
+          descrição; no desktop o details fica sempre aberto (script abaixo). */}
+      {
+        (item.ctaHref || item.secondaryCta?.href) && (
+          <div class="trip-card-ctas">
+            {item.ctaHref && (
+              <a href={item.ctaHref} class="trip-card-cta" target="_blank" rel="sponsored noopener">
+                {item.ctaLabel} →
+              </a>
+            )}
+            {item.secondaryCta?.href && (
+              <a href={item.secondaryCta.href} class="trip-card-cta trip-card-cta--secondary" target="_blank" rel="sponsored noopener">
+                {item.secondaryCta.label} →
+              </a>
+            )}
+          </div>
+        )
+      }
+    </details>
+  </div>
+</div>
+
+<style>
+  .trip-card {
+    background: var(--color-background);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: stretch;
+  }
+
+  .trip-card:not(.featured):hover {
+    border-color: var(--color-primary);
+    box-shadow: none;
+  }
+
+  .trip-card.featured {
+    border-color: var(--color-primary);
+  }
+
+  .trip-card-photo {
+    position: relative;
+    width: 160px;
+    min-width: 160px;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-background-highlight));
+  }
+
+  /* Preenche a caixa (que estica com o texto do card) e recorta pelo centro —
+     por isso não existe um tamanho fixo de imagem, qualquer foto de boa
+     resolução funciona. */
+  .trip-card-photo-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .trip-card-body {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    justify-content: center;
+    flex: 1;
+  }
+
+  .trip-card-body h3 {
+    font-size: 1.125rem;
+  }
+
+  /* Fechado por padrão: só título + botão de book aparecem. Clicar no título
+     expande a descrição — evita que texto longo (comum na aba Activities)
+     estique o card inteiro (e a foto quadrada junto, via align-items:stretch). */
+  .trip-card-details summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-2);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .trip-card-details summary h3 {
+    margin: 0;
+  }
+
+  .trip-card-details summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .trip-card-chevron {
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+    transition: transform 0.15s ease;
+  }
+
+  .trip-card-details[open] .trip-card-chevron {
+    transform: rotate(180deg);
+  }
+
+  .trip-card-body p {
+    margin: var(--space-2) 0 0;
+    font-size: var(--fs-secondary-mobile);
+    color: var(--color-text-secondary);
+    /* Preserva \n na descrição — usado quando o texto faz mais sentido em
+       linhas separadas (ex: um "Included:" no final). */
+    white-space: pre-line;
+  }
+
+  @media (min-width: 768px) {
+    .trip-card-body p {
+      font-size: var(--fs-secondary);
+    }
+
+    /* No desktop a descrição fica sempre visível (script abaixo força
+       details.open = true) — o colapso só existe pra resolver o card
+       esticado no mobile, onde a largura estreita faz qualquer texto virar
+       várias linhas. `pointer-events: none` trava o título pra não fechar
+       de novo com um clique. CSS sozinho não dá: navegadores não incluem o
+       conteúdo do <details> fechado no layout mesmo forçando display, então
+       precisa mesmo do atributo `open` real. */
+    .trip-card-chevron {
+      display: none;
+    }
+
+    .trip-card-details summary {
+      cursor: default;
+      pointer-events: none;
+    }
+  }
+
+  /* Selo pequeno acima do título — texto discreto com uma linha fina embaixo,
+     não um badge chapado por cima da foto. */
+  .trip-card-badge {
+    display: block;
+    width: fit-content;
+    padding-bottom: 2px;
+    border-bottom: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .trip-card-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+
+  .trip-card-cta.trip-card-cta--secondary {
+    background: transparent;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .trip-card-cta {
+    border: 1px solid transparent;
+    display: inline-block;
+    background: var(--color-primary);
+    color: var(--color-background);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: var(--fs-secondary-mobile);
+    padding: var(--space-2) var(--space-3);
+    border-radius: 8px;
+    width: fit-content;
+  }
+</style>
+
+<script>
+  // TripCard é renderizado várias vezes (um por card) — o Astro deduplica
+  // este <script> automaticamente, rodando só uma vez.
+  const desktopQuery = window.matchMedia('(min-width: 768px)');
+
+  function forceOpenOnDesktop() {
+    if (!desktopQuery.matches) return;
+    document.querySelectorAll<HTMLDetailsElement>('.trip-card-details').forEach((details) => {
+      details.open = true;
+    });
+  }
+
+  forceOpenOnDesktop();
+  desktopQuery.addEventListener('change', forceOpenOnDesktop);
+</script>

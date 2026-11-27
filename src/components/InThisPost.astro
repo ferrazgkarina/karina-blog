@@ -1,0 +1,78 @@
+---
+import type { GoodToKnowData, PostSectionData } from '../lib/sanity';
+import { useTranslations, defaultLang, type Locale } from '../i18n/utils';
+
+interface Props {
+  sections: PostSectionData[];
+  goodToKnow?: GoodToKnowData | null;
+}
+
+const { sections, goodToKnow = null } = Astro.props;
+const t = useTranslations((Astro.currentLocale as Locale) ?? defaultLang);
+---
+
+<nav class="in-this-post" aria-label={t('inThisPost.heading')}>
+  <h3>{t('inThisPost.heading')}</h3>
+  <ul>
+    {
+      sections.map((section) => (
+        <li><a href={`#${section.id}`}>{section.heading}</a></li>
+      ))
+    }
+  </ul>
+  {
+    goodToKnow && (
+      <p class="jump-link">
+        <a href="#good-to-know">
+          {goodToKnow.jumpLinkText || t('goodToKnow.jumpDefault')} <span aria-hidden="true">↓</span>
+        </a>
+      </p>
+    )
+  }
+</nav>
+
+<style>
+  .in-this-post {
+    max-width: var(--article-max);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .in-this-post h3 {
+    margin-bottom: var(--space-2);
+  }
+
+  .in-this-post ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .in-this-post a {
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .in-this-post a:hover {
+    text-decoration: underline;
+  }
+
+  .jump-link {
+    margin: var(--space-3) 0 0;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--fs-secondary-mobile);
+  }
+
+  @media (min-width: 768px) {
+    .jump-link {
+      font-size: var(--fs-secondary);
+    }
+  }
+</style>

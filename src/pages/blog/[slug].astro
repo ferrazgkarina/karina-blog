@@ -1,0 +1,90 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import PostHeaderBlock from '../../components/PostHeaderBlock.astro';
+import ArticleBody from '../../components/ArticleBody.astro';
+import InThisPost from '../../components/InThisPost.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import ComingNextBar from '../../components/ComingNextBar.astro';
+import AuthorBio from '../../components/AuthorBio.astro';
+import GoodToKnow from '../../components/GoodToKnow.astro';
+import { getAllPosts, type PostData } from '../../lib/sanity';
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: PostData;
+}
+
+const { post } = Astro.props;
+---
+
+<BaseLayout
+  title={post.seo.title || post.title}
+  description={post.seo.description || post.teaser}
+  image={post.seo.imageUrl || post.coverImageUrl}
+  noIndex={post.seo.noIndex}
+  type="article"
+>
+  <Header />
+  <PostHeaderBlock post={post} />
+
+  <main class="container post-grid">
+    <div class="main-column">
+      <Fragment set:html={post.introHtml} />
+      <InThisPost sections={post.sections} goodToKnow={post.goodToKnow} />
+      <ArticleBody post={post} />
+      <GoodToKnow data={post.goodToKnow} />
+    </div>
+    <Sidebar relatedPosts={post.relatedPosts} />
+  </main>
+
+  <AuthorBio {...post.authorBio} />
+  <!-- Marca o fim real do conteúdo p/ o ComingNextBar saber quando não há próxima seção. -->
+  <div id="post-end-sentinel"></div>
+
+  <ComingNextBar sections={post.sections} relatedPosts={post.relatedPosts} />
+</BaseLayout>
+
+<style>
+  .post-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    padding-block: var(--space-5) var(--space-6);
+  }
+
+  /* Sem isso, um item de grid sem min-width:0 herda o min-content dos
+     descendentes — qualquer bloco com scroll horizontal lá dentro (carrosséis,
+     cards) força a página inteira a alargar ("grid blowout"). */
+  .main-column {
+    min-width: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .post-grid {
+      grid-template-columns: 8fr 4fr;
+      gap: var(--space-6);
+    }
+  }
+
+  /* :global porque o HTML vem de introHtml (set:html), sem o escopo do Astro. */
+  .main-column :global(.intro) {
+    max-width: var(--article-max);
+    font-size: var(--fs-body-mobile);
+    font-weight: 500;
+    margin-bottom: var(--space-3);
+  }
+
+  @media (min-width: 768px) {
+    .main-column :global(.intro) {
+      font-size: var(--fs-body);
+    }
+  }
+</style>

@@ -1,0 +1,275 @@
+---
+import type { TripPanel } from '../data/tripCards';
+import TripCard from './TripCard.astro';
+
+interface Props {
+  panels: TripPanel[];
+  defaultPanelId: string;
+}
+
+const { panels, defaultPanelId } = Astro.props;
+---
+
+<div class="trip-tabs">
+  <div class="tabs-row-wrap">
+    <div class="container tabs-row" id="trip-tabs-row">
+      {
+        panels.map((panel) => (
+          <button
+            class:list={['tab', { active: panel.id === defaultPanelId }]}
+            data-tab={panel.id}
+            type="button"
+          >
+            <span class="full">{panel.tabLabelFull}</span>
+            <span class="short">{panel.tabLabelShort}</span>
+          </button>
+        ))
+      }
+    </div>
+    {/* Sugere que dá pra rolar mais abas pro lado — a barra de rolagem nativa
+       está escondida (scrollbar-width: none) e nem toda aba cabe na tela. */}
+    <div class="tabs-fade" id="trip-tabs-fade" aria-hidden="true" />
+  </div>
+
+  {
+    panels.map((panel) => (
+      <div class="panel" id={`panel-${panel.id}`} style={panel.id === defaultPanelId ? undefined : { display: 'none' }}>
+        <div class="container panel-inner">
+          <div class="panel-header">
+            <h2>{panel.heading}</h2>
+            <div class="panel-note">{panel.note}</div>
+          </div>
+          {
+            panel.intro && (
+              <div class="panel-intro">
+                {panel.intro.map((paragraph) => (
+                  <p set:html={paragraph} />
+                ))}
+              </div>
+            )
+          }
+          {panel.items.length > 0 ? (
+            <div class="cards-grid">
+              {panel.items.map((item) => (
+                <TripCard item={item} />
+              ))}
+            </div>
+          ) : panel.widgetHtml ? (
+            <div class="panel-widget" set:html={panel.widgetHtml} />
+          ) : (
+            panel.emptyState && (
+              <div class="empty-state">
+                <div class="heading">{panel.emptyState.heading}</div>
+                <p>{panel.emptyState.description}</p>
+              </div>
+            )
+          )}
+          {panel.disclaimer && <p class="panel-disclaimer">{panel.disclaimer}</p>}
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .tabs-row-wrap {
+    position: relative;
+  }
+
+  .tabs-row {
+    display: flex;
+    gap: 6px;
+    padding-top: var(--space-5);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabs-fade {
+    position: absolute;
+    top: var(--space-5);
+    right: 0;
+    bottom: 0;
+    width: 32px;
+    background: linear-gradient(to right, transparent, var(--color-background));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .tabs-fade.visible {
+    opacity: 1;
+  }
+
+  .tab {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: var(--fs-secondary-mobile);
+    background: var(--color-secondary);
+    color: var(--color-text-secondary);
+    border: none;
+    padding: var(--space-3) var(--space-4);
+    border-radius: 14px 14px 0 0;
+    cursor: pointer;
+    opacity: 0.75;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .tab .short {
+    display: none;
+  }
+
+  .tab:hover {
+    opacity: 1;
+  }
+
+  .tab.active {
+    background: var(--color-background-highlight);
+    color: var(--color-text);
+    opacity: 1;
+  }
+
+  .panel {
+    background: var(--color-background-highlight);
+    padding-block: var(--space-5);
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    max-width: var(--article-max);
+    margin-bottom: var(--space-4);
+  }
+
+  .panel-note {
+    font-size: var(--fs-secondary-mobile);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+  }
+
+  .panel-intro {
+    max-width: var(--article-max);
+    margin-bottom: var(--space-4);
+  }
+
+  .panel-intro p {
+    margin: 0 0 var(--space-2);
+    font-size: var(--fs-secondary-mobile);
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .panel-intro p:last-child {
+    margin-bottom: 0;
+  }
+
+  .panel-disclaimer {
+    max-width: var(--article-max);
+    margin: var(--space-4) 0 0;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--fs-secondary-mobile);
+    color: var(--color-text-secondary);
+  }
+
+  @media (min-width: 768px) {
+    .panel-disclaimer {
+      font-size: var(--fs-secondary);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .panel-intro p {
+      font-size: var(--fs-secondary);
+    }
+  }
+
+  .cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: var(--article-max);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-6) var(--space-4);
+    color: var(--color-text-secondary);
+  }
+
+  .empty-state .heading {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.125rem;
+    margin-bottom: var(--space-2);
+    color: var(--color-text);
+  }
+
+  @media (min-width: 768px) {
+    .tab {
+      font-size: var(--fs-body);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .tab .full {
+      display: none;
+    }
+
+    .tab .short {
+      display: inline;
+    }
+  }
+</style>
+
+<script>
+  const tabsRow = document.getElementById('trip-tabs-row');
+  const tabsFade = document.getElementById('trip-tabs-fade');
+
+  function updateTabsFade() {
+    if (!tabsRow || !tabsFade) return;
+    const hasMoreToScroll = tabsRow.scrollWidth - tabsRow.scrollLeft - tabsRow.clientWidth > 4;
+    tabsFade.classList.toggle('visible', hasMoreToScroll);
+  }
+
+  if (tabsRow) {
+    updateTabsFade();
+    tabsRow.addEventListener('scroll', updateTabsFade, { passive: true });
+    window.addEventListener('resize', updateTabsFade);
+  }
+
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.trip-tabs .tab');
+  const panels = document.querySelectorAll<HTMLElement>('.trip-tabs .panel');
+
+  function activateTab(tabId: string) {
+    const tab = Array.from(tabs).find((t) => t.dataset.tab === tabId);
+    if (!tab) return;
+    tabs.forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    panels.forEach((panel) => {
+      panel.style.display = panel.id === `panel-${tabId}` ? 'block' : 'none';
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => activateTab(tab.dataset.tab ?? ''));
+  });
+
+  // Deep link: /book-your-trip/#activities abre direto na aba certa (ver
+  // planYourTripItems, os cards "Plan your trip" da Home linkam pra cá).
+  // `hashchange` cobre navegar de #hotels pra #cars sem sair da página —
+  // trocar só o hash do mesmo documento não recarrega, então o script não
+  // rodaria de novo sem esse listener.
+  function activateTabFromHash() {
+    const tabId = location.hash.replace('#', '');
+    if (tabId) activateTab(tabId);
+  }
+
+  activateTabFromHash();
+  window.addEventListener('hashchange', activateTabFromHash);
+</script>

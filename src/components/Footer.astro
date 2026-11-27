@@ -1,0 +1,60 @@
+---
+import { useTranslations, defaultLang, type Locale } from '../i18n/utils';
+import { siteConfig } from '../config/site';
+
+const t = useTranslations((Astro.currentLocale as Locale) ?? defaultLang);
+const year = new Date().getFullYear();
+---
+
+<!-- Spec ainda não detalhou o footer além da cor — adicionei só os links
+     essenciais (Contact, Privacy Policy) pra essas páginas ficarem acessíveis. -->
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>© {year} {siteConfig.name}</p>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="/contact/">{t('nav.contact')}</a>
+      <a href="/privacy-policy/">{t('footer.privacyPolicy')}</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--color-primary);
+    color: var(--color-background);
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .footer-inner p {
+    margin: 0;
+    font-size: var(--fs-secondary-mobile);
+    opacity: 0.8;
+  }
+
+  .footer-nav {
+    display: flex;
+    gap: var(--space-4);
+  }
+
+  .footer-nav a {
+    color: var(--color-background);
+    font-size: var(--fs-secondary-mobile);
+    text-decoration: underline;
+  }
+
+  @media (min-width: 768px) {
+    .footer-inner {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+</style>

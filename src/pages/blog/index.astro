@@ -1,0 +1,360 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import BlogPostCard from '../../components/BlogPostCard.astro';
+import { getAllPostCards } from '../../lib/sanity';
+import { useTranslations, defaultLang, type Locale } from '../../i18n/utils';
+
+const t = useTranslations((Astro.currentLocale as Locale) ?? defaultLang);
+
+const blogPosts = await getAllPostCards();
+// Categorias derivadas dos posts publicados (na etapa 3 passam a vir do documento Category).
+const blogCategories = [...new Set(blogPosts.map((post) => post.category).filter(Boolean))].sort();
+const siteFeatured = blogPosts.find((post) => post.isSiteFeatured);
+const categoryHubs = blogCategories.map((category) => ({
+  category,
+  hub: blogPosts.find((post) => post.category === category && post.isCategoryHub),
+}));
+---
+
+<BaseLayout title="Travel Blog">
+  <Header />
+
+  <main class="blog-page">
+    <!-- Fundo full-width azul claro (mesmo tom do hero/PostHeaderBlock),
+         conteúdo interno alinhado ao container de 1200px como o resto do site.
+         Título compacto de propósito — é uma página utilitária de listagem,
+         não precisa do H1 grande de destaque usado no hero da home. -->
+    <div class="blog-controls-section">
+      <div class="container blog-container">
+        <h1 class="blog-title">Blog</h1>
+        <div class="blog-controls">
+          <div class="category-filters" role="group" aria-label="Filter by category">
+            <button class="filter-pill active" data-category="all" type="button">{t('blog.allCategories')}</button>
+            {
+              blogCategories.map((category) => (
+                <button class="filter-pill" data-category={category} type="button">
+                  {category}
+                </button>
+              ))
+            }
+          </div>
+          <input
+            type="search"
+            id="blog-search"
+            class="search-input"
+            placeholder={t('blog.searchPlaceholder')}
+            aria-label={t('blog.searchAriaLabel')}
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Setas acima dos dois blocos (não só da grade), pra destaque e
+           grade começarem exatamente na mesma linha — ver ajuste pedido. -->
+      <div class="pagination-controls" id="pagination-controls" hidden>
+        <button class="page-btn" id="grid-prev" type="button" aria-label={t('carousel.prev')}>‹</button>
+        <button class="page-btn" id="grid-next" type="button" aria-label={t('carousel.next')}>›</button>
+      </div>
+
+      <div class="blog-layout">
+        <div class="featured-slot">
+          {siteFeatured && <BlogPostCard post={siteFeatured} featured featuredFor="all" />}
+          {
+            categoryHubs.map(({ category, hub }) => hub && <BlogPostCard post={hub} featured featuredFor={category} />)
+          }
+        </div>
+
+        <div class="posts-grid" id="posts-grid">
+          {/* O post "site featured" também entra na grade (escondido só no filtro "All",
+              onde já aparece no destaque do topo) — senão sumia ao filtrar pela categoria dele. */}
+          {
+            blogPosts.map((post) => (
+              <BlogPostCard
+                post={post}
+                featuredFor={post.isSiteFeatured ? 'all' : post.isCategoryHub ? post.category : null}
+              />
+            ))
+          }
+        </div>
+      </div>
+
+      <p class="no-results" id="no-results" hidden>
+        {t('blog.noResults')}
+      </p>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .blog-page {
+    padding-block: 0 var(--space-6);
+  }
+
+  .blog-controls-section {
+    background: var(--color-background-highlight);
+    padding-block: var(--space-3) var(--space-4);
+  }
+
+  /* Margens laterais maiores que o container padrão do site — deixa a
+     coluna de conteúdo (e por tabela, a imagem do post em destaque) mais
+     estreita, em vez de esticar até quase a borda em telas largas. */
+  .blog-container {
+    padding-inline: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .blog-container {
+      padding-inline: var(--space-6);
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .blog-container {
+      padding-inline: 6rem;
+    }
+  }
+
+  .blog-title {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-2);
+  }
+
+  .blog-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .filter-pill {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--fs-secondary-mobile);
+    background: var(--color-background);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: var(--space-2) var(--space-4);
+    cursor: pointer;
+  }
+
+  .filter-pill.active {
+    background: var(--color-primary);
+    color: var(--color-background);
+    border-color: var(--color-primary);
+  }
+
+  .search-input {
+    font-family: var(--font-body);
+    font-size: var(--fs-body-mobile);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    max-width: 320px;
+  }
+
+  .blog-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    margin-top: var(--space-4);
+  }
+
+  .featured-slot:empty,
+  .featured-slot[hidden] {
+    display: none;
+  }
+
+  .pagination-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .pagination-controls[hidden] {
+    display: none;
+  }
+
+  .page-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--color-tertiary);
+    background: transparent;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--color-tertiary);
+  }
+
+  .page-btn:hover {
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: var(--color-text);
+  }
+
+  .page-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .no-results {
+    color: var(--color-text-secondary);
+    padding-block: var(--space-5);
+  }
+
+  .no-results:not([hidden]) {
+    display: block;
+  }
+
+  @media (min-width: 768px) {
+    .blog-title {
+      font-size: var(--fs-h2);
+      margin-bottom: var(--space-3);
+    }
+
+    .blog-controls {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .blog-layout {
+      grid-template-columns: minmax(240px, 1fr) 2fr;
+    }
+
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+      align-content: start;
+    }
+  }
+
+  /* No mobile a lista fica empilhada e rola naturalmente com a página — as
+     setas de paginação só fazem sentido no bloco fixo de 6 do desktop. */
+  @media (max-width: 767px) {
+    .pagination-controls {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const PAGE_SIZE = 6;
+
+  const pills = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
+  const searchInput = document.getElementById('blog-search') as HTMLInputElement;
+  const featuredSlot = document.querySelector<HTMLElement>('.featured-slot');
+  const featuredCards = document.querySelectorAll<HTMLElement>('.featured-slot .blog-card');
+  const gridCards = document.querySelectorAll<HTMLElement>('#posts-grid .blog-card');
+  const noResults = document.getElementById('no-results') as HTMLElement;
+  const paginationControls = document.getElementById('pagination-controls') as HTMLElement;
+  const prevPageBtn = document.getElementById('grid-prev') as HTMLButtonElement;
+  const nextPageBtn = document.getElementById('grid-next') as HTMLButtonElement;
+
+  // Mesmo breakpoint do CSS (--breakpoint-desktop / min-width:768px usado no
+  // resto do site). No mobile a lista fica empilhada e rola com a página —
+  // paginar em blocos de 6 só faz sentido no layout lado a lado do desktop.
+  const desktopQuery = window.matchMedia('(min-width: 768px)');
+
+  let activeCategory = 'all';
+  let currentPage = 0;
+
+  function applyFilters() {
+    const query = searchInput.value.trim().toLowerCase();
+    const searching = query.length > 0;
+    const paginate = desktopQuery.matches;
+
+    let featuredVisibleCount = 0;
+    featuredCards.forEach((card) => {
+      const show = !searching && card.dataset.featuredFor === activeCategory;
+      card.style.display = show ? '' : 'none';
+      if (show) featuredVisibleCount++;
+    });
+    if (featuredSlot) featuredSlot.hidden = featuredVisibleCount === 0;
+
+    // Todos os posts que batem com categoria + busca. No desktop, a
+    // paginação (bloco fixo de 6 = 3 linhas x 2 colunas) fatia esse conjunto
+    // depois; no mobile mostra tudo direto, sem cortar.
+    const matched = Array.from(gridCards).filter((card) => {
+      const categoryMatches = activeCategory === 'all' || card.dataset.category === activeCategory;
+      const searchMatches = !searching || (card.dataset.title ?? '').includes(query);
+      const hiddenAsFeatured = !searching && card.dataset.featuredFor === activeCategory;
+      return categoryMatches && searchMatches && !hiddenAsFeatured;
+    });
+
+    const totalPages = paginate ? Math.max(1, Math.ceil(matched.length / PAGE_SIZE)) : 1;
+    currentPage = Math.min(currentPage, totalPages - 1);
+
+    const start = paginate ? currentPage * PAGE_SIZE : 0;
+    const end = paginate ? start + PAGE_SIZE : matched.length;
+    const visible = new Set(matched.slice(start, end));
+
+    gridCards.forEach((card) => {
+      card.style.display = visible.has(card) ? '' : 'none';
+    });
+
+    paginationControls.hidden = !paginate || totalPages <= 1;
+    prevPageBtn.disabled = currentPage === 0;
+    nextPageBtn.disabled = currentPage >= totalPages - 1;
+
+    noResults.hidden = matched.length > 0 || featuredVisibleCount > 0;
+  }
+
+  desktopQuery.addEventListener('change', () => {
+    currentPage = 0;
+    applyFilters();
+  });
+
+  pills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      pills.forEach((p) => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeCategory = pill.dataset.category ?? 'all';
+      currentPage = 0;
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener('input', () => {
+    currentPage = 0;
+    applyFilters();
+  });
+
+  prevPageBtn.addEventListener('click', () => {
+    currentPage = Math.max(0, currentPage - 1);
+    applyFilters();
+  });
+
+  nextPageBtn.addEventListener('click', () => {
+    currentPage += 1;
+    applyFilters();
+  });
+
+  // Vindo do breadcrumb de um post (/blog/?category=When%20to%20Go): abre já filtrado.
+  const requestedCategory = new URLSearchParams(location.search).get('category');
+  const requestedPill = Array.from(pills).find((pill) => pill.dataset.category === requestedCategory);
+  if (requestedPill) {
+    pills.forEach((p) => p.classList.remove('active'));
+    requestedPill.classList.add('active');
+    activeCategory = requestedPill.dataset.category ?? 'all';
+  }
+
+  applyFilters();
+</script>

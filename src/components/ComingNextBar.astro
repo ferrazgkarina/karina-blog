@@ -1,0 +1,279 @@
+---
+import type { PostSectionData, RelatedPostRef } from '../lib/sanity';
+import ShareButtons from './ShareButtons.astro';
+import RelatedContent from './RelatedContent.astro';
+import { useTranslations, defaultLang, type Locale } from '../i18n/utils';
+
+interface Props {
+  sections: PostSectionData[];
+  relatedPosts: RelatedPostRef[];
+}
+
+const { sections, relatedPosts } = Astro.props;
+const firstNext = sections[1]?.heading ?? sections[0]?.heading ?? '';
+const t = useTranslations((Astro.currentLocale as Locale) ?? defaultLang);
+---
+
+<div class="coming-next-bar">
+  <div class="container coming-next-inner">
+    <p class="coming-next-label" id="coming-next-label" data-at-end="false">
+      <span class="coming-next-continue">{t('comingNext.prefix')} <span id="coming-next-text">{firstNext}</span></span>
+      <span class="coming-next-end">
+        <span class="end-mobile">{t('comingNext.endOfPostMobile')}</span>
+        <span class="end-desktop">{t('comingNext.endOfPost')}</span>
+      </span>
+    </p>
+    <button
+      id="coming-next-toggle"
+      class="coming-next-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="coming-next-panel"
+      aria-label={t('comingNext.toggleAriaLabel')}
+    >
+      +
+    </button>
+  </div>
+</div>
+
+<div id="coming-next-panel" class="coming-next-panel">
+  <div class="coming-next-panel-header">
+    <button id="coming-next-close" class="coming-next-close" type="button" aria-label={t('comingNext.closeAriaLabel')}>✕</button>
+  </div>
+  <div class="container coming-next-panel-inner">
+    <ShareButtons />
+    <RelatedContent posts={relatedPosts} />
+  </div>
+</div>
+
+<style>
+  .coming-next-bar {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    background: var(--color-primary);
+    color: var(--color-background);
+    z-index: 20;
+  }
+
+  .coming-next-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+  }
+
+  .coming-next-label {
+    margin: 0;
+    font-size: var(--fs-secondary-mobile);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Fim do post: troca "Coming next: …" pela mensagem de fim. No mobile ela
+     aponta para o "+" (que abre os posts relacionados); no desktop o "+" não
+     existe (a Sidebar já mostra tudo), então fica a mensagem simples. */
+  .coming-next-end,
+  .end-desktop {
+    display: none;
+  }
+
+  .coming-next-label[data-at-end='true'] .coming-next-continue {
+    display: none;
+  }
+
+  .coming-next-label[data-at-end='true'] .coming-next-end,
+  .coming-next-label[data-at-end='true'] .end-mobile {
+    display: inline;
+  }
+
+  @media (min-width: 1024px) {
+    .coming-next-label[data-at-end='true'] .end-mobile {
+      display: none;
+    }
+
+    .coming-next-label[data-at-end='true'] .end-desktop {
+      display: inline;
+    }
+  }
+
+  .coming-next-toggle {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--color-secondary);
+    color: var(--color-text);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  /* No desktop, o Sidebar já mostra share + related content. */
+  @media (min-width: 1024px) {
+    .coming-next-toggle,
+    .coming-next-panel {
+      display: none;
+    }
+  }
+
+  .coming-next-panel {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+    /* Mesmo fundo pêssego da sidebar sticky no desktop (--color-secondary) —
+       diferencia o painel do fundo cream da página por trás dele. */
+    background: var(--color-secondary);
+    border-top: 1px solid var(--color-border);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+    z-index: 19;
+  }
+
+  .coming-next-panel.open {
+    transform: translateY(-52px);
+  }
+
+  .coming-next-panel-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding-block: var(--space-4) var(--space-6);
+  }
+
+  .coming-next-panel-header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--space-3) var(--space-4) 0;
+    background: var(--color-secondary);
+  }
+
+  .coming-next-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-background);
+    color: var(--color-text);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .coming-next-close:hover {
+    background: var(--color-background-highlight);
+  }
+</style>
+
+<script>
+  const sections = Array.from(document.querySelectorAll<HTMLElement>('.article-section'));
+  const comingNextText = document.getElementById('coming-next-text');
+
+  const sectionData = sections.map((el) => ({
+    id: el.id,
+    heading: el.querySelector('h2')?.textContent ?? '',
+    showInComingNext: el.dataset.showInComingNext !== '0',
+  }));
+
+  // Quando não há próxima seção, a barra troca "Coming next: …" pela mensagem
+  // de fim de post (as duas versões já vêm no HTML, traduzidas; aqui só
+  // alternamos data-at-end e o CSS decide qual mostrar).
+  const comingNextLabel = document.getElementById('coming-next-label');
+  let atEnd = false;
+
+  function setEnded(ended: boolean) {
+    comingNextLabel?.setAttribute('data-at-end', String(ended));
+  }
+
+  // Pula seções com showInComingNext=false — a barra mostra o próximo H2
+  // "importante" que vier, não necessariamente o H2 imediatamente seguinte.
+  function updateComingNext(currentIndex: number) {
+    if (!comingNextText || atEnd) return;
+    const next = sectionData.slice(currentIndex + 1).find((section) => section.showInComingNext);
+    if (next) {
+      comingNextText.textContent = next.heading;
+    }
+    setEnded(!next);
+  }
+
+  // Antes usava IntersectionObserver com rootMargin encolhendo a área de
+  // detecção pros 30% superiores da tela — em seções longas, isso fazia o
+  // texto "atrasar" bastante (só atualizava quando o H2 já tinha subido até
+  // quase o topo). Calcular direto pela posição de scroll, a cada frame,
+  // resolve isso: a seção "atual" é sempre a última cujo H2 já passou da
+  // linha de referência (logo abaixo do header fixo).
+  const SCROLL_REFERENCE_LINE = 96;
+
+  function getCurrentSectionIndex(): number {
+    // -1 = ainda nenhuma seção foi alcançada (ex: intro/"In This Post").
+    // updateComingNext(-1) mostra sectionData[0] — a primeira seção — que é
+    // de fato a próxima coisa a vir, em vez de pular pra segunda.
+    let current = -1;
+    for (let i = 0; i < sections.length; i++) {
+      if (sections[i].getBoundingClientRect().top <= SCROLL_REFERENCE_LINE) {
+        current = i;
+      } else {
+        break;
+      }
+    }
+    return current;
+  }
+
+  if (sections.length > 0) {
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        updateComingNext(getCurrentSectionIndex());
+        ticking = false;
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  // Em posts curtos, a última seção pode nunca cruzar a zona de detecção do
+  // observer acima antes de a página acabar. Este sentinel (colocado logo
+  // após o AuthorBio) garante que o fim real do conteúdo seja detectado.
+  const endSentinel = document.getElementById('post-end-sentinel');
+  if (endSentinel && comingNextText) {
+    const endObserver = new IntersectionObserver(
+      ([entry]) => {
+        atEnd = entry.isIntersecting;
+        if (atEnd) {
+          setEnded(true);
+        } else {
+          updateComingNext(getCurrentSectionIndex());
+        }
+      },
+      { threshold: 0 }
+    );
+    endObserver.observe(endSentinel);
+  }
+
+  const toggleButton = document.getElementById('coming-next-toggle');
+  const closeButton = document.getElementById('coming-next-close');
+  const panel = document.getElementById('coming-next-panel');
+
+  function setPanelOpen(open: boolean) {
+    toggleButton?.setAttribute('aria-expanded', String(open));
+    panel?.classList.toggle('open', open);
+  }
+
+  toggleButton?.addEventListener('click', () => {
+    setPanelOpen(toggleButton.getAttribute('aria-expanded') !== 'true');
+  });
+
+  closeButton?.addEventListener('click', () => setPanelOpen(false));
+</script>

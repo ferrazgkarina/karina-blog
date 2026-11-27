@@ -1,0 +1,70 @@
+---
+import { planYourTripItems } from '../data/planYourTrip';
+import { useTranslations, defaultLang, type Locale } from '../i18n/utils';
+
+const t = useTranslations((Astro.currentLocale as Locale) ?? defaultLang);
+---
+
+<section class="plan-trip-section">
+  <div class="container">
+    <h2>{t('home.planYourTrip')}</h2>
+    <div class="plan-trip-grid">
+      {
+        planYourTripItems.map((item) => (
+          <a class="plan-trip-item" href={item.linkTarget}>
+            <img src={item.icon} alt={item.label} loading="lazy" />
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .plan-trip-section {
+    background: #ffffff;
+    text-align: center;
+  }
+
+  .plan-trip-section .container {
+    padding-block: var(--space-6);
+  }
+
+  .plan-trip-section h2 {
+    margin-bottom: var(--space-5);
+  }
+
+  /* Mobile: grid de 3 colunas, 2 linhas de 3. Desktop: 1 linha de 6. */
+  .plan-trip-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    max-width: 600px;
+    margin-inline: auto;
+  }
+
+  .plan-trip-item {
+    aspect-ratio: 1;
+    display: block;
+    overflow: hidden;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+
+  .plan-trip-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (min-width: 768px) {
+    .plan-trip-section .container {
+      padding-block: 6rem;
+    }
+
+    .plan-trip-grid {
+      grid-template-columns: repeat(6, 1fr);
+      max-width: none;
+    }
+  }
+</style>

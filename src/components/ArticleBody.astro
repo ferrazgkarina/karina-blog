@@ -1,0 +1,135 @@
+---
+import type { PostData } from '../lib/sanity';
+import SuggestedPosts from './SuggestedPosts.astro';
+import WeatherCards from './WeatherCards.astro';
+
+interface Props {
+  post: PostData;
+}
+
+const { post } = Astro.props;
+---
+
+<div class="article-body">
+  {
+    post.content.map((item) =>
+      item.kind === 'block' ? (
+        <Fragment set:html={item.html} />
+      ) : (
+        <section
+          id={item.section.id}
+          class="article-section"
+          data-show-in-coming-next={item.section.showInComingNext ? '1' : '0'}
+        >
+          <h2>{item.section.heading}</h2>
+          {item.section.weatherCards && item.section.weatherCards.position === 'top' && (
+            <WeatherCards {...item.section.weatherCards} />
+          )}
+          <Fragment set:html={item.section.bodyHtml} />
+          {item.section.suggestedPosts.length > 0 && <SuggestedPosts posts={item.section.suggestedPosts} />}
+          {item.section.weatherCards && item.section.weatherCards.position === 'bottom' && (
+            <WeatherCards {...item.section.weatherCards} />
+          )}
+        </section>
+      )
+    )
+  }
+</div>
+
+<style>
+  .article-body {
+    max-width: var(--article-max);
+    font-weight: 500;
+  }
+
+  /* :global porque isso vem de bodyHtml (set:html) — conteúdo injetado em
+     runtime não recebe o escopo automático do Astro. */
+  .article-body :global(.body-image) {
+    display: block;
+    width: 100%;
+    border-radius: 8px;
+    margin-block: var(--space-4);
+  }
+
+  .article-section {
+    margin-bottom: var(--space-5);
+    scroll-margin-top: var(--space-4);
+  }
+
+  /* :global — mesmo motivo do .body-image acima: isso vem de bodyHtml. */
+  .article-body :global(.cta-block) {
+    background: var(--color-tertiary);
+    color: var(--color-background);
+    border-radius: 8px;
+    padding: var(--space-4);
+    margin-block: var(--space-4);
+  }
+
+  .article-body :global(.cta-block p) {
+    margin: 0 0 var(--space-3);
+    font-weight: 600;
+  }
+
+  .article-body :global(.cta-button) {
+    display: inline-block;
+    background: var(--color-secondary);
+    color: var(--color-text);
+    padding: var(--space-2) var(--space-4);
+    text-decoration: none;
+  }
+
+  /* Bloco "quick picks" (lista de recomendações com links de afiliado) — mesmo
+     marrom do CTA card; links em pêssego para se destacarem do texto. */
+  .article-body :global(.quick-picks) {
+    background: var(--color-tertiary);
+    color: var(--color-background);
+    border-radius: 8px;
+    padding: var(--space-4);
+    margin-block: var(--space-4);
+  }
+
+  .article-body :global(.quick-picks-title) {
+    margin: 0 0 var(--space-3);
+    color: var(--color-background);
+  }
+
+  .article-body :global(.quick-picks p) {
+    margin: 0;
+  }
+
+  .article-body :global(.quick-picks p.quick-picks-intro) {
+    margin-bottom: var(--space-3);
+  }
+
+  .article-body :global(.quick-picks-list) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .article-body :global(.quick-picks a) {
+    color: var(--color-secondary);
+    font-weight: 700;
+  }
+
+  .article-body :global(.quick-picks p.quick-picks-note) {
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid rgba(248, 242, 238, 0.3);
+    font-size: var(--fs-secondary-mobile);
+  }
+
+  /* Variante sem botão: o próprio texto é o link (buttonText em branco). */
+  .article-body :global(.cta-block--text-link) {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .article-body :global(.cta-text-link) {
+    color: var(--color-background);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+</style>

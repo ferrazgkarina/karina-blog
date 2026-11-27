@@ -1,0 +1,52 @@
+---
+import '../styles/global.css';
+import CookieBanner from '../components/CookieBanner.astro';
+import { siteConfig } from '../config/site';
+
+interface Props {
+  title: string;
+  description?: string;
+  // Caminho (ex: post.coverImageUrl) ou URL completa — vira absoluta abaixo.
+  // Sem imagem própria, cai numa foto padrão do site pro compartilhamento.
+  image?: string | null;
+  noIndex?: boolean;
+  // 'article' nas páginas de post (dá contexto correto pro Facebook/Pinterest).
+  type?: 'website' | 'article';
+}
+
+const { title, description = '', image, noIndex = false, type = 'website' } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const fallbackImage = siteConfig.defaultOgImage ? new URL(siteConfig.defaultOgImage, Astro.site).toString() : null;
+const ogImage = image ? new URL(image, Astro.site).toString() : fallbackImage;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonicalURL} />
+    {noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={siteConfig.name} />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonicalURL} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+  </head>
+  <body>
+    <slot />
+    <!-- O Google Analytics só carrega depois do "Accept" (ver CookieBanner). -->
+    <CookieBanner />
+  </body>
+</html>

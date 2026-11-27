@@ -1,0 +1,238 @@
+---
+import { useTranslations, defaultLang, type Locale } from '../i18n/utils';
+import { siteConfig } from '../config/site';
+
+const t = useTranslations((Astro.currentLocale as Locale) ?? defaultLang);
+
+const navLinks = [
+  { label: t('nav.blog'), href: '/blog/' },
+  { label: t('nav.contact'), href: '/contact/' },
+];
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="/" aria-label={siteConfig.name}>{siteConfig.name}</a>
+    <nav aria-label={t('nav.explore')}>
+      <ul class="main-nav">
+        <li>
+          <a href="/" class="nav-home" aria-label={t('breadcrumb.home')}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 11.5 12 4l9 7.5" />
+              <path d="M5.5 10v9.5h13V10" />
+            </svg>
+          </a>
+        </li>
+        {
+          navLinks.map((link) => (
+            <li>
+              <a href={link.href}>{link.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <!-- Mobile: mesmo padrão visual do botão "+" / painel do ComingNextBar
+         (ver src/components/ComingNextBar.astro) — reaproveitado aqui pro
+         menu, já que .main-nav some abaixo de 768px. -->
+    <button
+      id="mobile-menu-toggle"
+      class="mobile-menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="mobile-menu-panel"
+      aria-label={t('nav.openMenuAriaLabel')}
+    >
+      +
+    </button>
+  </div>
+
+  <!-- Dropdown ancorado no botão "+", não um bottom sheet full-width. -->
+  <div id="mobile-menu-panel" class="mobile-menu-panel">
+    <div class="mobile-menu-header">
+      <button id="mobile-menu-close" class="mobile-menu-close" type="button" aria-label={t('nav.closeMenuAriaLabel')}>
+        ✕
+      </button>
+    </div>
+    <ul class="mobile-menu-links">
+      <li>
+        <a href="/">{t('breadcrumb.home')}</a>
+      </li>
+      {
+        navLinks.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: relative;
+    background: var(--color-primary);
+    color: var(--color-background);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--space-3);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .logo {
+    color: var(--color-secondary);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+
+  .main-nav {
+    display: flex;
+    gap: var(--space-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-nav a {
+    color: var(--color-background);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--fs-button);
+    text-decoration: none;
+  }
+
+  .nav-home {
+    display: flex;
+    align-items: center;
+  }
+
+  .mobile-menu-toggle {
+    display: none;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--color-secondary);
+    color: var(--color-text);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  @media (max-width: 767px) {
+    .main-nav {
+      display: none;
+    }
+
+    .mobile-menu-toggle {
+      display: block;
+    }
+  }
+
+  /* Dropdown ancorado no botão "+" (canto superior direito do header), não
+     um bottom sheet full-width — mesma paleta/estilo do painel do
+     ComingNextBar, só reposicionado. */
+  .mobile-menu-panel {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    right: var(--space-4);
+    width: 220px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    transform-origin: top right;
+    transform: scale(0.95);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      transform 0.15s ease,
+      opacity 0.15s ease;
+    z-index: 30;
+  }
+
+  .mobile-menu-panel.open {
+    transform: scale(1);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .mobile-menu-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--space-2) var(--space-2) 0;
+  }
+
+  .mobile-menu-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-background);
+    color: var(--color-text);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .mobile-menu-close:hover {
+    background: var(--color-background-highlight);
+  }
+
+  .mobile-menu-links {
+    list-style: none;
+    margin: 0;
+    padding: 0 var(--space-4) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .mobile-menu-links a {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-menu-panel {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const toggleButton = document.getElementById('mobile-menu-toggle');
+  const closeButton = document.getElementById('mobile-menu-close');
+  const panel = document.getElementById('mobile-menu-panel');
+
+  function setMenuOpen(open: boolean) {
+    toggleButton?.setAttribute('aria-expanded', String(open));
+    panel?.classList.toggle('open', open);
+  }
+
+  toggleButton?.addEventListener('click', () => {
+    setMenuOpen(toggleButton.getAttribute('aria-expanded') !== 'true');
+  });
+
+  closeButton?.addEventListener('click', () => setMenuOpen(false));
+</script>

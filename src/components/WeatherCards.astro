@@ -1,0 +1,129 @@
+---
+// Card de dados do mês (posts mensais, ex. "Cappadocia in December") — dado
+// manual (horários e temperatura em °C), o card em si é gerado
+// automaticamente. Reaproveita o estilo do resto do site: ícone em
+// --color-primary sobre um fundo branco, banner --color-secondary com o
+// texto — os dois são blocos independentes (cada um pinta sua própria área),
+// pra não sobrar nenhuma borda/vazamento de cor entre eles.
+interface Props {
+  sunrise: string;
+  sunset: string;
+  tempMaxC: number;
+  tempMinC: number;
+}
+
+const { sunrise, sunset, tempMaxC, tempMinC } = Astro.props;
+---
+
+<div class="weather-cards">
+  <div class="weather-card">
+    <div class="weather-icon-wrap">
+      <svg class="weather-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <line x1="6" y1="36" x2="42" y2="36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <path d="M12,36 A12,12 0 0,1 36,36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <path
+          d="M24,8 L24,22 M18,14 L24,8 L30,14"
+          stroke="currentColor"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+    <div class="weather-banner">
+      <span class="weather-label">Sunrise average</span>
+      <span class="weather-value">{sunrise}</span>
+    </div>
+  </div>
+
+  <div class="weather-card">
+    <div class="weather-icon-wrap">
+      <svg class="weather-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <line x1="6" y1="36" x2="42" y2="36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <path d="M12,36 A12,12 0 0,1 36,36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <path
+          d="M24,8 L24,22 M18,16 L24,22 L30,16"
+          stroke="currentColor"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+    <div class="weather-banner">
+      <span class="weather-label">Sunset average</span>
+      <span class="weather-value">{sunset}</span>
+    </div>
+  </div>
+
+  <div class="weather-card">
+    <div class="weather-icon-wrap">
+      <svg class="weather-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M20,10 a4,4 0 0 1 8,0 V27 a8,8 0 1 1 -8,0 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round" />
+        <line x1="24" y1="14" x2="24" y2="27" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+      </svg>
+    </div>
+    <div class="weather-banner">
+      <span class="weather-label">Temperature</span>
+      <span class="weather-value">Min: {tempMinC}°C</span>
+      <span class="weather-value">Max: {tempMaxC}°C</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .weather-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    margin-block: var(--space-5);
+  }
+
+  .weather-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .weather-icon-wrap {
+    display: flex;
+    justify-content: center;
+    background: #ffffff;
+    padding-block: var(--space-4) var(--space-3);
+  }
+
+  .weather-icon {
+    width: 40px;
+    height: 40px;
+    color: var(--color-primary);
+  }
+
+  .weather-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: var(--color-secondary);
+    padding: var(--space-2) var(--space-2) var(--space-3);
+    text-align: center;
+  }
+
+  .weather-label {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.875rem;
+  }
+
+  .weather-value {
+    font-size: var(--fs-secondary-mobile);
+    color: var(--color-text);
+  }
+
+  @media (min-width: 768px) {
+    .weather-label {
+      font-size: 1rem;
+    }
+  }
+</style>

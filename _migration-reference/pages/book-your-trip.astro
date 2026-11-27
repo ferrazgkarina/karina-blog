@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import TripTabs from '../components/TripTabs.astro';
+import { tripPanels } from '../data/tripCards';
+
+// A ilustração já tem "Plan your trip" / "Book your Trip" / subtítulo
+// desenhados nela (feito no Canva) — o H1 aqui é só semântico (SEO /
+// leitores de tela), visualmente oculto. `subtitle` alimenta a meta
+// description da página.
+const hero = {
+  title: 'Book Your Trip',
+  subtitle:
+    "Hand-picked hotels, cave houses, cars and activities — the same places I use when I'm there myself.",
+};
+---
+
+<BaseLayout title="Book Your Trip to Cappadocia | Cappadocia.guide" description={hero.subtitle}>
+  <Header />
+
+  <div class="hero">
+    <h1 class="visually-hidden">{hero.title}</h1>
+  </div>
+
+  <TripTabs panels={tripPanels} defaultPanelId="hotels" />
+</BaseLayout>
+
+<style>
+  .hero {
+    /* "left" garante que o texto (no terço esquerdo da imagem) nunca saia do
+       recorte em telas estreitas. "center" no eixo vertical faz o corte (só
+       relevante em telas largas, onde o cover estica pela largura) ficar
+       metade em cima, metade embaixo, em vez de tirar tudo de um lado só. */
+    background: var(--color-background) url('/images/book-your-trip-hero.webp') left center / cover no-repeat;
+    height: 360px;
+  }
+
+  @media (max-width: 767px) {
+    .hero {
+      height: 280px;
+    }
+  }
+</style>
